@@ -13,22 +13,28 @@ public:
         return (m_components.find(which) != m_components.end());
     }
 
-    void create_relay(uint64_t handle, uint64_t handle_connection)
+    void create_relay(uint64_t handle, connections pass_connections, connections set_connections, bool value)
     {
-        std::shared_ptr<relay_t> rel = std::make_shared<relay_t>(handle_connection);
-        
-        if (is_handle(handle) == true) return; // Anti-aliasing
+        std::shared_ptr<relay_t> new_relay = std::make_shared<relay_t>(pass_connections, set_connections, value);
 
-        m_components[handle] = rel;
+        if (is_handle(handle) == false) return;
+
+        m_components[handle] = new_relay;
     }
 
     void complete_references()
     {
-        for (auto &[handle, relay] : m_components)
-        {
-            if (is_handle(relay->get_handle_connection()) == false) continue;
 
-            relay->connect(m_components[relay->get_handle_connection()]);
+    }
+
+    void compute()
+    {
+        uint64_t total_operations;
+        bool busy = true;
+
+        while (busy)
+        {
+
         }
     }
 private:
