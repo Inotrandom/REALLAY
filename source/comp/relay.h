@@ -14,21 +14,18 @@ class relay_t;
 struct conduit_t
 {
     std::shared_ptr<relay_t> out{nullptr};
-    std::shared_ptr<relay_t> in{nullptr};
     uint64_t outrequest{0};
-    uint64_t inrequest{0};
     bool value{false};
 
     conduit_t(uint64_t ainrequest, uint64_t aoutrequest)
     {
         outrequest = aoutrequest;
-        inrequest = ainrequest;
     }
 };
 
-auto fct_conduitptr(uint64_t ainrequest, uint64_t aoutrequest) -> std::shared_ptr<conduit_t>
+inline auto fct_conduitptr(uint64_t aoutrequest) -> std::shared_ptr<conduit_t>
 {
-    std::shared_ptr<conduit_t> res = std::make_shared<conduit_t>(ainrequest, aoutrequest);
+    std::shared_ptr<conduit_t> res = std::make_shared<conduit_t>(aoutrequest);
     return res;
 }
 
