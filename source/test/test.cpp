@@ -38,7 +38,7 @@ static test_t TEST_RELAY = test_t("test_relay", []()
     // Relays who have no conduits connected to the inbound PASS terminal will
     // implicitly set all of the outbound connections to TRUE if and only if
     // the relay's value is true
-    comp.create_relay(0, {fct_conduitptr(2)}, {fct_conduitptr(1)}, true);
+    comp.create_relay(0, {fct_conduitptr(2, CONDUIT_TYPE::PASS)}, {fct_conduitptr(1, CONDUIT_TYPE::SET)}, true);
     comp.create_relay(1, {}, {}, false);
     comp.create_relay(2, {}, {}, false);
     comp.create_relay(3, {}, {}, false);

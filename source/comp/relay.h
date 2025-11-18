@@ -9,6 +9,12 @@
 const std::chrono::milliseconds SWITCH_ON = std::chrono::milliseconds(5);
 const std::chrono::milliseconds SWITCH_OFF = std::chrono::milliseconds(15);
 
+enum CONDUIT_TYPE // The connection type of the conduit
+{
+    SET,
+    PASS
+};
+
 class relay_t;
 
 struct conduit_t
@@ -16,19 +22,22 @@ struct conduit_t
     std::shared_ptr<relay_t> out{nullptr};
     uint64_t outrequest{0};
     bool value{false};
+    CONDUIT_TYPE conduit_type{CONDUIT_TYPE::SET};
 
-    conduit_t(uint64_t ainrequest, uint64_t aoutrequest)
+    conduit_t(uint64_t aoutrequest, CONDUIT_TYPE aconduit_type)
     {
         outrequest = aoutrequest;
+        conduit_type = aconduit_type;
     }
 };
 
-inline auto fct_conduitptr(uint64_t aoutrequest) -> std::shared_ptr<conduit_t>
+inline auto fct_conduitptr(uint64_t aoutrequest, CONDUIT_TYPE aconduit_type) -> std::shared_ptr<conduit_t>
 {
-    std::shared_ptr<conduit_t> res = std::make_shared<conduit_t>(aoutrequest);
+    std::shared_ptr<conduit_t> res = std::make_shared<conduit_t>(aoutrequest, aconduit_type);
     return res;
 }
 
+// Beautiful template syntax
 typedef std::vector<std::shared_ptr<conduit_t>> connections;
 
 /**
@@ -37,14 +46,27 @@ typedef std::vector<std::shared_ptr<conduit_t>> connections;
 class relay_t
 {
 public:
-    relay_t(connections pass_connections, connections set_connections, bool value)
+    relay_t(connections pass_connections, connections set_connections, bool value, bool pass_value = false)
     {
+        m_pass_terminal = pass_connections;
+        m_set_terminal = set_connections;
         m_value = value;
+        m_pass_terminal_value = pass_value;
     }
 
     auto get_value() -> bool&
     {
         return m_value;
+    }
+
+    auto get_pass_terminal() -> connections&
+    {
+        return m_pass_terminal;
+    }
+
+    auto get_set_terminal() -> connections&
+    {
+        return m_set_terminal;
     }
 
     void connect_pass_terminal(std::shared_ptr<conduit_t> which)
@@ -75,6 +97,11 @@ public:
         std::this_thread::sleep_for(t);
     }
 
+    auto get_pass_value() -> bool&
+    {
+        return m_pass_terminal_value;
+    }
+
     /**
      * @brief Compute the relay
     */
@@ -94,14 +121,16 @@ public:
 
         for (auto connection : m_pass_terminal)
         {
-            connection->value = m_value;
+            // If it can pass, and the value is true...
+            connection->value = (m_value && m_pass_terminal_value);
         }
     }
 private:
-    std::vector<std::shared_ptr<conduit_t>> m_pass_terminal{{}};
-    std::vector<std::shared_ptr<conduit_t>> m_set_terminal{{}};
+    connections m_pass_terminal{{}};
+    connections m_set_terminal{{}};
 
     bool m_value{false};
+    bool m_pass_terminal_value{false};
 };
 
 #endif
